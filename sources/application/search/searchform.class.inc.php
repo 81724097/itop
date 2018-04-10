@@ -131,6 +131,22 @@ class SearchForm
 		{
 			$sClassesCombo = MetaModel::GetName($sClassName);
 		}
+
+		$bAutoSubmit = true;
+		$mSubmitParam = utils::GetConfig()->Get('search_manual_submit');
+		if (is_array($mSubmitParam))
+		{
+			// List of classes
+			if (isset($mSubmitParam[$sClassName]) && ($mSubmitParam[$sClassName] !== false))
+			{
+				$bAutoSubmit = false;
+			}
+		}
+		else if ($mSubmitParam !== false)
+		{
+			$bAutoSubmit = false;
+		}
+
 		$sAction = (isset($aExtraParams['action'])) ? $aExtraParams['action'] : utils::GetAbsoluteUrlAppRoot().'pages/UI.php';
 		$sStyle = ($bOpen == 'true') ? '' : 'closed';
 		$sHtml .= "<form id=\"fs_{$sSearchFormId}\" action=\"{$sAction}\" class=\"{$sStyle}\">\n"; // Don't use $_SERVER['SCRIPT_NAME'] since the form may be called asynchronously (from ajax.php)
@@ -201,7 +217,7 @@ class SearchForm
 			'data_config_list_selector' => "#{$sDataConfigListSelector}",
 			'endpoint' => utils::GetAbsoluteUrlAppRoot().'pages/ajax.searchform.php',
 			'init_opened' => $bOpen,
-			'auto_submit' => false, // TODO: Change this so it takes the configuration parameter value for the current class.
+			'auto_submit' => $bAutoSubmit,
 			'list_params' => $aListParams,
 			'search' => array(
 				'has_hidden_criteria' => (array_key_exists('hidden_criteria', $aListParams) && !empty($aListParams['hidden_criteria'])),
