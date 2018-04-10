@@ -112,7 +112,6 @@ class SearchForm
 			}
 		}
 
-
 		$aSubClasses = MetaModel::GetSubclasses($sRootClass);
 		if (count($aSubClasses) > 0)
 		{
@@ -169,7 +168,6 @@ class SearchForm
 		$oBaseSearch->ResetCondition();
 		$sBaseOQL = str_replace(' WHERE 1', '', $oBaseSearch->ToOQL());
 
-
 		if (isset($aExtraParams['table_inner_id']))
 		{
 			$sDataConfigListSelector = $aExtraParams['table_inner_id'];
@@ -182,8 +180,6 @@ class SearchForm
 		{
 			$aListParams['table_inner_id'] = "table_inner_id_{$sSearchFormId}";
 		}
-
-
 
 		$sDebug = utils::ReadParam('debug', 'false', false, 'parameter');
 		if ($sDebug == 'true')
@@ -385,6 +381,7 @@ class SearchForm
 
 		$aOrCriterion = array();
 		$aORExpressions = Expression::Split($oExpression, 'OR');
+		$bIsEmptyExpression = true;
 		foreach($aORExpressions as $oORSubExpr)
 		{
 			$aAndCriterion = array();
@@ -396,9 +393,16 @@ class SearchForm
 					continue;
 				}
 				$aAndCriterion[] = $oAndSubExpr->GetCriterion($oSearch);
+				$bIsEmptyExpression = false;
 			}
 			$aAndCriterion = CriterionToSearchForm::Convert($aAndCriterion, $aFields, $oSearch->GetJoinedClasses(), $bIsRemovable);
 			$aOrCriterion[] = array('and' => $aAndCriterion);
+		}
+
+		if ($bIsEmptyExpression)
+		{
+			// Add default criterion
+			$aOrCriterion = $this->GetDefaultCriterion($oSearch);
 		}
 
 		return array('or' => $aOrCriterion);
@@ -484,6 +488,37 @@ class SearchForm
 		}
 
 		return $aFields;
+	}
+
+	/**
+	 * @param $oSearch
+	 * @return array
+	 */
+	protected function GetDefaultCriterion($oSearch)
+	{
+		$aAndCriterion = array();
+		$sClass = $oSearch->GetClass();
+		$aList = MetaModel::GetZListItems($sClass, 'default_search');
+		while (empty($aList))
+		{
+			// search in parent class if default criteria are defined
+			$sClass = MetaModel::GetParentClass($sClass);
+			if (is_null($sClass))
+			{
+				$aOrCriterion = array(array('and' => $aAndCriterion));
+				return $aOrCriterion;
+			}
+			$aList = MetaModel::GetZListItems($sClass, 'default_search');
+		}
+		$sAlias = $oSearch->GetClassAlias();
+		foreach($aList as $sAttCode)
+		{
+			$oFieldExpression = new \FieldExpression($sAttCode, $sAlias);
+			$aAndCriterion[] = $oFieldExpression->GetCriterion($oSearch);
+		}
+		// Overwrite with default criterion
+		$aOrCriterion = array(array('and' => $aAndCriterion));
+		return $aOrCriterion;
 	}
 
 
