@@ -211,6 +211,18 @@ class SearchForm
 		$aMonthsShort = array(Dict::S('Month-01-Short'), Dict::S('Month-02-Short'), Dict::S('Month-03-Short'), Dict::S('Month-04-Short'), Dict::S('Month-05-Short'), Dict::S('Month-06-Short'),
 			Dict::S('Month-07-Short'), Dict::S('Month-08-Short'), Dict::S('Month-09-Short'), Dict::S('Month-10-Short'), Dict::S('Month-11-Short'), Dict::S('Month-12-Short'));
 
+
+//		$sDateTimeFormat = \AttributeDateTime::GetFormat()->ToMomentJS('%s');
+//		$iDateTimeSeparatorPos = strpos($sDateTimeFormat, ' ');
+//		$sDateFormat = substr($sDateTimeFormat, 0, $iDateTimeSeparatorPos);
+//		$sTimeFormat = substr($sDateTimeFormat, $iDateTimeSeparatorPos + 1);
+
+
+		$sDateTimeFormat = \AttributeDateTime::GetFormat()->ToDatePicker();
+		$iDateTimeSeparatorPos = strpos($sDateTimeFormat, ' ');
+		$sDateFormat = substr($sDateTimeFormat, 0, $iDateTimeSeparatorPos);
+		$sTimeFormat = substr($sDateTimeFormat, $iDateTimeSeparatorPos + 1);
+
 		$aSearchParams = array(
 			'criterion_outer_selector' => "#fs_{$sSearchFormId}_criterion_outer",
 			'result_list_outer_selector' => "#{$aExtraParams['result_list_outer_selector']}",
@@ -233,6 +245,9 @@ class SearchForm
 					'dayNamesMin' => $aDaysMin,
 					'monthNamesShort' => $aMonthsShort,
 					'firstDay' => (int) Dict::S('Calendar-FirstDayOfWeek'),
+//					'format' => \AttributeDateTime::GetFormat()->ToDatePicker()
+					'dateFormat' => $sDateFormat,
+					'timeFormat' => $sTimeFormat,
 				),
 			),
 		);
