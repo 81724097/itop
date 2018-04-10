@@ -134,7 +134,10 @@ class SearchForm
 		$sAction = (isset($aExtraParams['action'])) ? $aExtraParams['action'] : utils::GetAbsoluteUrlAppRoot().'pages/UI.php';
 		$sStyle = ($bOpen == 'true') ? '' : 'closed';
 		$sHtml .= "<form id=\"fs_{$sSearchFormId}\" action=\"{$sAction}\" class=\"{$sStyle}\">\n"; // Don't use $_SERVER['SCRIPT_NAME'] since the form may be called asynchronously (from ajax.php)
-		$sHtml .= "<h2 class=\"sf_title\"><span class=\"sft_picto fa fa-search\"></span>" . Dict::Format('UI:SearchFor_Class_Objects', $sClassesCombo) . "<a class=\"sft_toggler fa fa-caret-down pull-right\" href=\"#\" title=\"" . Dict::S('UI:Search:Toggle') . "\"></a><a class=\"sft_refresh fa fa-search pull-right\" href=\"#\" title=\"" . Dict::S('UI:Button:Refresh') . "\"></a></h2>\n";
+		$sHtml .= "<h2 class=\"sf_title\"><span class=\"sft_long\">" . Dict::Format('UI:SearchFor_Class_Objects', $sClassesCombo) . "</span><span class=\"sft_short\">" . Dict::S('UI:SearchToggle') . "</span>";
+		$sHtml .= "<a class=\"sft_toggler fa fa-caret-down pull-right\" href=\"#\" title=\"" . Dict::S('UI:Search:Toggle') . "\"></a>";
+		$sHtml .= "<a class=\"sft_refresh fa fa-search pull-right\" href=\"#\" title=\"" . Dict::S('UI:Button:Refresh') . "\"></a>";
+		$sHtml .= "</h2>\n";
 		$sHtml .= "<div id=\"fs_{$sSearchFormId}_message\" class=\"sf_message header_message\"></div>\n";
 		$sHtml .= "<div id=\"fs_{$sSearchFormId}_criterion_outer\">\n</div>\n";
 		$sHtml .= "</form>\n";
@@ -198,6 +201,7 @@ class SearchForm
 			'data_config_list_selector' => "#{$sDataConfigListSelector}",
 			'endpoint' => utils::GetAbsoluteUrlAppRoot().'pages/ajax.searchform.php',
 			'init_opened' => $bOpen,
+			'auto_submit' => false, // TODO: Change this so it takes the configuration parameter value for the current class.
 			'list_params' => $aListParams,
 			'search' => array(
 				'has_hidden_criteria' => (array_key_exists('hidden_criteria', $aListParams) && !empty($aListParams['hidden_criteria'])),
