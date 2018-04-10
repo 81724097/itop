@@ -156,6 +156,8 @@ class CriterionToOQL extends CriterionConversionAbstract
 			{
 				case AttributeDefinition::SEARCH_WIDGET_TYPE_NUMERIC:
 				case AttributeDefinition::SEARCH_WIDGET_TYPE_EXTERNAL_FIELD:
+				case AttributeDefinition::SEARCH_WIDGET_TYPE_DATE:
+				case AttributeDefinition::SEARCH_WIDGET_TYPE_DATE_TIME:
 					return "ISNULL({$sRef})";
 			}
 		}
