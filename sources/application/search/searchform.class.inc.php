@@ -137,9 +137,23 @@ class SearchForm
 		if (is_array($mSubmitParam))
 		{
 			// List of classes
-			if (isset($mSubmitParam[$sClassName]) && ($mSubmitParam[$sClassName] !== false))
+			if (isset($mSubmitParam[$sClassName]))
 			{
-				$bAutoSubmit = false;
+				$bAutoSubmit = !$mSubmitParam[$sClassName];
+			}
+			else
+			{
+				// Serach for child classes
+				foreach($mSubmitParam as $sConfigClass => $bFlag)
+				{
+					$aChildClasses = MetaModel::EnumChildClasses($sConfigClass);
+					if (in_array($sClassName, $aChildClasses))
+					{
+						$bAutoSubmit = !$bFlag;
+						break;
+					}
+				}
+
 			}
 		}
 		else if ($mSubmitParam !== false)
@@ -185,7 +199,10 @@ class SearchForm
 		}
 
 		$oBaseSearch = $oSearch->DeepClone();
-		$oBaseSearch->ResetCondition();
+		if (method_exists($oSearch, 'GetCriteria'))
+		{
+			$oBaseSearch->ResetCondition();
+		}
 		$sBaseOQL = str_replace(' WHERE 1', '', $oBaseSearch->ToOQL());
 
 		if (isset($aExtraParams['table_inner_id']))
@@ -418,40 +435,44 @@ class SearchForm
 	 */
 	public function GetCriterion($oSearch, $aFields, $aArgs = array(), $bIsRemovable = true)
 	{
-		$oExpression = $oSearch->GetCriteria();
-
-		if (!empty($aArgs))
-		{
-			$aArgs = MetaModel::PrepareQueryArguments($aArgs);
-
-			$sOQL = $oExpression->Render($aArgs);
-			$oExpression = Expression::FromOQL($sOQL);
-		}
-
 		$aOrCriterion = array();
-		$aORExpressions = Expression::Split($oExpression, 'OR');
-		$bIsEmptyExpression = true;
-		foreach($aORExpressions as $oORSubExpr)
-		{
-			$aAndCriterion = array();
-			$aAndExpressions = Expression::Split($oORSubExpr, 'AND');
-			foreach($aAndExpressions as $oAndSubExpr)
-			{
-				if (($oAndSubExpr instanceof TrueExpression) || ($oAndSubExpr->Render() == 1))
-				{
-					continue;
-				}
-				$aAndCriterion[] = $oAndSubExpr->GetCriterion($oSearch);
-				$bIsEmptyExpression = false;
-			}
-			$aAndCriterion = CriterionToSearchForm::Convert($aAndCriterion, $aFields, $oSearch->GetJoinedClasses(), $bIsRemovable);
-			$aOrCriterion[] = array('and' => $aAndCriterion);
-		}
 
-		if ($bIsEmptyExpression)
+		if (method_exists($oSearch, 'GetCriteria'))
 		{
-			// Add default criterion
-			$aOrCriterion = $this->GetDefaultCriterion($oSearch);
+			$oExpression = $oSearch->GetCriteria();
+
+			if (!empty($aArgs))
+			{
+				$aArgs = MetaModel::PrepareQueryArguments($aArgs);
+
+				$sOQL = $oExpression->Render($aArgs);
+				$oExpression = Expression::FromOQL($sOQL);
+			}
+
+			$aORExpressions = Expression::Split($oExpression, 'OR');
+			$bIsEmptyExpression = true;
+			foreach($aORExpressions as $oORSubExpr)
+			{
+				$aAndCriterion = array();
+				$aAndExpressions = Expression::Split($oORSubExpr, 'AND');
+				foreach($aAndExpressions as $oAndSubExpr)
+				{
+					if (($oAndSubExpr instanceof TrueExpression) || ($oAndSubExpr->Render() == 1))
+					{
+						continue;
+					}
+					$aAndCriterion[] = $oAndSubExpr->GetCriterion($oSearch);
+					$bIsEmptyExpression = false;
+				}
+				$aAndCriterion = CriterionToSearchForm::Convert($aAndCriterion, $aFields, $oSearch->GetJoinedClasses(), $bIsRemovable);
+				$aOrCriterion[] = array('and' => $aAndCriterion);
+			}
+
+			if ($bIsEmptyExpression)
+			{
+				// Add default criterion
+				$aOrCriterion = $this->GetDefaultCriterion($oSearch);
+			}
 		}
 
 		return array('or' => $aOrCriterion);
