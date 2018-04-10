@@ -317,6 +317,7 @@ class SearchForm
 	{
 		$aAttributeDefs = MetaModel::ListAttributeDefs($sClass);
 		$aList = MetaModel::GetZListItems($sClass, 'standard_search');
+		$bHasFriendlyname = false;
 		foreach($aList as $sAttCode)
 		{
 			if (array_key_exists($sAttCode, $aAttributeDefs))
@@ -325,6 +326,18 @@ class SearchForm
 				$aZList = $this->AppendField($sClass, $sAlias, $sAttCode, $oAttDef, $aZList);
 				unset($aAttributeDefs[$sAttCode]);
 			}
+			if ($sAttCode == 'friendlyname')
+			{
+				$bHasFriendlyname = true;
+			}
+		}
+		if (!$bHasFriendlyname)
+		{
+			// Add friendlyname to the most popular
+			$sAttCode = 'friendlyname';
+			$oAttDef = $aAttributeDefs[$sAttCode];
+			$aZList = $this->AppendField($sClass, $sAlias, $sAttCode, $oAttDef, $aZList);
+			unset($aAttributeDefs[$sAttCode]);
 		}
 		$aZList = $this->AppendId($sClass, $sAlias, $aZList);
 		uasort($aZList, function ($aItem1, $aItem2) {
