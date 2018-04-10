@@ -431,13 +431,13 @@ class SearchForm
 	/**
 	 * @param $sClass
 	 * @param $sClassAlias
-	 * @param $sFilterCode
+	 * @param $sAttCode
 	 * @param $oAttDef
 	 * @param $aFields
 	 *
 	 * @return mixed
 	 */
-	private function AppendField($sClass, $sClassAlias, $sFilterCode, $oAttDef, $aFields)
+	private function AppendField($sClass, $sClassAlias, $sAttCode, $oAttDef, $aFields)
 	{
 		if (!is_null($oAttDef) && ($oAttDef->GetSearchType() != AttributeDefinition::SEARCH_WIDGET_TYPE_RAW))
 		{
@@ -447,7 +447,21 @@ class SearchForm
 			}
 			else
 			{
-				$sLabel = $oAttDef->GetLabel();
+				if ($sAttCode == 'friendlyname')
+				{
+					try
+					{
+						$sLabel = MetaModel::GetName($sClass);
+					}
+					catch (Exception $e)
+					{
+						$sLabel = $oAttDef->GetLabel();
+					}
+				}
+				else
+				{
+					$sLabel = $oAttDef->GetLabel();
+				}
 			}
 			
 			if (method_exists($oAttDef, 'GetTargetClass'))
@@ -460,7 +474,7 @@ class SearchForm
 			}
 
 			$aField = array();
-			$aField['code'] = $sFilterCode;
+			$aField['code'] = $sAttCode;
 			$aField['class'] = $sClass;
 			$aField['class_alias'] = $sClassAlias;
 			$aField['target_class'] = $sTargetClass;
@@ -468,7 +482,7 @@ class SearchForm
 			$aField['widget'] = $oAttDef->GetSearchType();
 			$aField['allowed_values'] = self::GetFieldAllowedValues($oAttDef);
 			$aField['is_null_allowed'] = $oAttDef->IsNullAllowed();
-			$aFields[$sClassAlias.'.'.$sFilterCode] = $aField;
+			$aFields[$sClassAlias.'.'.$sAttCode] = $aField;
 
 			// Sub items
 			//
