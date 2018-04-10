@@ -524,12 +524,12 @@ $(function()
 				else
 				{
 					oListsElem.find('.sfl_items > li:not(.sfl_i_placeholder)').each(function(){
-						var oRegExp = new RegExp(sFilter, 'ig');
+						var oRegExp = new RegExp(sFilter.latinize(), 'ig');
 						var sValue = $(this).find('input').val();
 						var sLabel = $(this).text();
 
 						// We don't check the sValue as it contains the class alias.
-						if(sLabel.match(oRegExp) !== null)
+						if(sLabel.latinise().match(oRegExp) !== null)
 						{
 							$(this).show();
 						}
