@@ -209,7 +209,7 @@ $(function()
 					for (var j = 0; j < prefix.length; j++) {
 						var pos = pars[i].lastIndexOf(prefix[j], 0);
 						if (pos !== -1) {
-							return pars[i].substring(pos);
+							return pars[i].substring(pos + prefix[j].length);
 						}
 					}
 				}
